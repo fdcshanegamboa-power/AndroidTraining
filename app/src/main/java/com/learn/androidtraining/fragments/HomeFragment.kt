@@ -7,23 +7,16 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.learn.androidtraining.MainActivity
 import com.learn.androidtraining.R
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class HomeFragment : Fragment(R.layout.fragment_home) {
     private var message: String = "This message is from HomeFragment"
     private val tag: String = "HomeFragment"
+    private lateinit var goToHome2Button: Button
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -47,10 +40,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        goToHome2Button = view.findViewById<Button>(R.id.button_go_home2)
 
+        goToHome2Button.setOnClickListener {
+            (activity as MainActivity).navigateTo(HomeFragment2())
+        }
 
-        val textView: TextView = view.findViewById<TextView>(R.id.textTitle)
-        textView.text = message
+//        val textView: TextView = view.findViewById<TextView>(R.id.textTitle)
+//        textView.text = message
         Log.d(tag, "onViewCreated")
     }
 

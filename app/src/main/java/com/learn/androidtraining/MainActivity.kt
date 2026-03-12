@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.learn.androidtraining.fragments.*
 import com.learn.androidtraining.ui.theme.AndroidTrainingTheme
@@ -23,6 +24,8 @@ class MainActivity : AppCompatActivity() {
 
     // Keep references to fragments
     private val homeFragment = HomeFragment()
+    private var currentFragment: Fragment = homeFragment
+    private var currentHomeFragment: Fragment = homeFragment
     private val profileFragment = ProfileFragment()
     private val settingsFragment = SettingsFragment()
 
@@ -42,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         // Handle bottom nav clicks
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_home -> showFragment(homeFragment)
+                R.id.nav_home -> showFragment(currentHomeFragment)
                 R.id.nav_profile -> showFragment(profileFragment)
                 R.id.nav_settings -> showFragment(settingsFragment)
                 else -> false
@@ -51,7 +54,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showFragment(fragmentToShow: Fragment): Boolean {
+
         val transaction = supportFragmentManager.beginTransaction()
+        transaction.hide(currentFragment)
 
         // Hide all fragments first
         listOf(homeFragment, profileFragment, settingsFragment).forEach {
@@ -62,7 +67,7 @@ class MainActivity : AppCompatActivity() {
 
         // Show the selected fragment
         transaction.show(fragmentToShow).commit()
-
+        currentFragment = fragmentToShow
         return true
     }
 
@@ -72,6 +77,16 @@ class MainActivity : AppCompatActivity() {
             .remove(fragment)
             .commit()
     }
+    fun navigateTo(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .hide(currentFragment)
+            .add(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
+        currentFragment = fragment
+        currentHomeFragment = fragment
+    }
+
 }
 
 //@Preview(showBackground = true)
