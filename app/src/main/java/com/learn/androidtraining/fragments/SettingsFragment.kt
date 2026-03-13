@@ -1,15 +1,19 @@
 package com.learn.androidtraining.fragments
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.learn.androidtraining.LoginActivity
 import com.learn.androidtraining.R
+import com.learn.androidtraining.auth.AuthViewModel
 import org.w3c.dom.Text
 
 // TODO: Rename parameter arguments, choose names that match
@@ -24,6 +28,8 @@ private const val ARG_PARAM2 = "param2"
  */
 class SettingsFragment : Fragment(R.layout.fragment_settings) {
     private var message: String = "This message is from SettingsFragment"
+    private lateinit var logoutButton: Button
+    private val viewModel: AuthViewModel = AuthViewModel()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -49,7 +55,15 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
         super.onViewCreated(view, savedInstanceState)
 
         val textView: TextView = view.findViewById<TextView>(R.id.textTitle)
+        logoutButton = view.findViewById<Button>(R.id.button_logout)
         textView.text = message
+
+        logoutButton.setOnClickListener {
+            viewModel.logout()
+            val intent = Intent(requireContext(), LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        }
         Log.d("SettingsFragment", "onViewCreated")
     }
 
