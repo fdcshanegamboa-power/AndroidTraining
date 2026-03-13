@@ -42,10 +42,10 @@ class HomeFragment3 : Fragment(R.layout.fragment_home3) {
         backButton = view.findViewById<Button>(R.id.button_back)
         nextButton = view.findViewById<Button>(R.id.button_go_home4)
         backButton.setOnClickListener {
-            parentFragmentManager.popBackStack()
+            (parentFragment as HomeFragment).childFragmentManager.popBackStack()
         }
         nextButton.setOnClickListener {
-            (activity as MainActivity).navigateTo(HomeFragment4())
+            (parentFragment as HomeFragment).navigateTo(HomeFragment4())
         }
     }
 }

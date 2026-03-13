@@ -43,12 +43,25 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         goToHome2Button = view.findViewById<Button>(R.id.button_go_home2)
 
         goToHome2Button.setOnClickListener {
-            (activity as MainActivity).navigateTo(HomeFragment2())
+            navigateTo(HomeFragment2())
+        }
+        childFragmentManager.addOnBackStackChangedListener {
+            val hasChildren = childFragmentManager.backStackEntryCount > 0
+            goToHome2Button.visibility = if (hasChildren) View.GONE else View.VISIBLE
         }
 
 //        val textView: TextView = view.findViewById<TextView>(R.id.textTitle)
 //        textView.text = message
         Log.d(tag, "onViewCreated")
+    }
+    fun navigateTo(fragment: Fragment) {
+        val transaction = childFragmentManager.beginTransaction()
+        val current = childFragmentManager.fragments.lastOrNull()
+        if (current != null) transaction.hide(current)
+        transaction
+            .add(R.id.home_child_container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onStart() {

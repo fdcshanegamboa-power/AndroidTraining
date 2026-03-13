@@ -1,6 +1,7 @@
 package com.learn.androidtraining.fragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -42,8 +43,11 @@ class HomeFragment4 : Fragment(R.layout.fragment_home4) {
         containerLeft = view.findViewById<FrameLayout>(R.id.container_left)
         containerRight = view.findViewById<FrameLayout>(R.id.container_right)
         backButton.setOnClickListener {
-            parentFragmentManager.popBackStack()
+            Log.d("gggggg", "Test ${(parentFragment as HomeFragment).childFragmentManager.fragments
+                .forEach { fragment -> Log.d("Fragment", "${fragment::class.simpleName}") }}" )
+            (parentFragment as HomeFragment).childFragmentManager.popBackStack()
         }
+
         childFragmentManager.beginTransaction()
             .add(R.id.container_left, NestedFragment1())
             .add(R.id.container_right, NestedFragment2())

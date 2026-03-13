@@ -1,31 +1,19 @@
 package com.learn.androidtraining
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import android.view.View
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.learn.androidtraining.fragments.*
-import com.learn.androidtraining.ui.theme.AndroidTrainingTheme
+import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.Fragment
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNav: BottomNavigationView
 
-    // Keep references to fragments
     private val homeFragment = HomeFragment()
-    private var currentFragment: Fragment = homeFragment
-    private var currentHomeFragment: Fragment = homeFragment
     private val profileFragment = ProfileFragment()
     private val settingsFragment = SettingsFragment()
 
@@ -35,57 +23,74 @@ class MainActivity : AppCompatActivity() {
 
         bottomNav = findViewById(R.id.bottom_nav)
 
-        // Initial add - add all fragments but hide all except Home
-        supportFragmentManager.beginTransaction()
-            .add(R.id.fragment_container, homeFragment, "HOME")
-            .add(R.id.fragment_container, profileFragment, "PROFILE").hide(profileFragment)
-            .add(R.id.fragment_container, settingsFragment, "SETTINGS").hide(settingsFragment)
-            .commit()
 
-        // Handle bottom nav clicks
+        if (savedInstanceState == null) {
+                supportFragmentManager.beginTransaction()
+                    .add(R.id.fragment_container, homeFragment, "HOME")
+                    .add(R.id.fragment_container, profileFragment, "PROFILE").hide(profileFragment)
+                    .add(R.id.fragment_container, settingsFragment, "SETTINGS").hide(settingsFragment)
+                    .commit()
+        }
+
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_home -> showFragment(currentHomeFragment)
+                R.id.nav_home -> showFragment(homeFragment)
                 R.id.nav_profile -> showFragment(profileFragment)
                 R.id.nav_settings -> showFragment(settingsFragment)
                 else -> false
             }
+            true
         }
-    }
 
-    private fun showFragment(fragmentToShow: Fragment): Boolean {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val homeContainer = supportFragmentManager.findFragmentByTag("HOME") as? HomeFragment
+                val homeChildManager = homeContainer?.childFragmentManager
 
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.hide(currentFragment)
-
-        // Hide all fragments first
-        listOf(homeFragment, profileFragment, settingsFragment).forEach {
-            if (it.isAdded && it != fragmentToShow) {
-                transaction.hide(it)
+                if (homeChildManager != null && homeChildManager.backStackEntryCount > 0) {
+                    homeChildManager.popBackStack()
+                } else {
+                    android.app.AlertDialog.Builder(this@MainActivity)
+                        .setTitle("Exit App")
+                        .setMessage("Are you sure you want to exit?")
+                        .setPositiveButton("Yes") { _, _ ->
+                            isEnabled = false
+                            onBackPressedDispatcher.onBackPressed()
+                        }
+                        .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
+                        .show()
+                }
             }
-        }
+        })
 
-        // Show the selected fragment
-        transaction.show(fragmentToShow).commit()
-        currentFragment = fragmentToShow
-        return true
     }
 
-    // Example of remove (not used in bottom nav)
-    private fun removeFragment(fragment: Fragment) {
+    private fun showFragment(target: Fragment) {
         supportFragmentManager.beginTransaction()
-            .remove(fragment)
+            .hide(settingsFragment)
+            .hide(profileFragment)
+            .hide(homeFragment)
+            .show(target)
             .commit()
     }
-    fun navigateTo(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .hide(currentFragment)
-            .add(R.id.fragment_container, fragment)
-            .addToBackStack(null)
-            .commit()
-        currentFragment = fragment
-        currentHomeFragment = fragment
-    }
+
+//    private fun showTab(containerId: Int) {
+//        listOf(R.id.container_home, R.id.container_profile, R.id.container_settings).forEach {
+//            findViewById<FrameLayout>(it).visibility =
+//                if (it == containerId) View.VISIBLE else View.GONE
+//        }
+//    }
+//    override fun onBackPressed() {
+//        val homeContainer = supportFragmentManager.findFragmentByTag("HOME") as? HomeFragment
+//        val homeChildManager = homeContainer?.childFragmentManager
+//
+//        if (homeChildManager != null && homeChildManager.backStackEntryCount > 0) {
+//            homeChildManager.popBackStack()
+//        } else {
+//            super.onBackPressed()
+//        }
+//    }
+
 
 }
 
