@@ -1,4 +1,4 @@
-package com.learn.androidtraining.auth
+package com.learn.androidtraining.firebase.auth
 
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth

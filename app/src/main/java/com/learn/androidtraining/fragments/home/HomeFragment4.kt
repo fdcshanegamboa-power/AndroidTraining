@@ -1,13 +1,16 @@
-package com.learn.androidtraining.fragments
+package com.learn.androidtraining.fragments.home
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import com.learn.androidtraining.MainActivity
+import android.widget.FrameLayout
 import com.learn.androidtraining.R
+import com.learn.androidtraining.fragments.NestedFragment1
+import com.learn.androidtraining.fragments.NestedFragment2
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -16,13 +19,13 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [HomeFragment2.newInstance] factory method to
+ * Use the [HomeFragment4.newInstance] factory method to
  * create an instance of this fragment.
  */
-class HomeFragment2 : Fragment(R.layout.fragment_home2) {
-
+class HomeFragment4 : Fragment(R.layout.fragment_home4) {
     private lateinit var backButton: Button
-    private lateinit var nextButton: Button
+    private lateinit var containerLeft: FrameLayout
+    private lateinit var containerRight: FrameLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,13 +42,17 @@ class HomeFragment2 : Fragment(R.layout.fragment_home2) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         backButton = view.findViewById<Button>(R.id.button_back)
-        nextButton = view.findViewById<Button>(R.id.button_go_home3)
+        containerLeft = view.findViewById<FrameLayout>(R.id.container_left)
+        containerRight = view.findViewById<FrameLayout>(R.id.container_right)
         backButton.setOnClickListener {
+            Log.d("gggggg", "Test ${(parentFragment as HomeFragment).childFragmentManager.fragments
+                .forEach { fragment -> Log.d("Fragment", "${fragment::class.simpleName}") }}" )
             (parentFragment as HomeFragment).childFragmentManager.popBackStack()
         }
-        nextButton.setOnClickListener {
-            (parentFragment as HomeFragment).navigateTo(HomeFragment3())
-        }
-    }
 
+        childFragmentManager.beginTransaction()
+            .add(R.id.container_left, NestedFragment1())
+            .add(R.id.container_right, NestedFragment2())
+            .commit()
+    }
 }

@@ -4,19 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.*
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.learn.androidtraining.auth.AuthViewModel
+import com.learn.androidtraining.firebase.auth.AuthViewModel
 import com.learn.androidtraining.databinding.ActivityRegisterBinding
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -33,11 +28,11 @@ class RegisterActivity : AppCompatActivity() {
         observeRegistrationState()
     }
     private fun setUpClickListeners(){
-        binding.btnRegister.setOnClickListener {
+        binding.buttonRegister.setOnClickListener {
 
-            val email = binding.etEmail.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
-            val confirm = binding.etConfirmPassword.text.toString().trim()
+            val email = binding.editTextEmail.text.toString().trim()
+            val password = binding.editTextPassword.text.toString().trim()
+            val confirm = binding.editTextConfirmPassword.text.toString().trim()
 
             if (email.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
                 showError("Please fill in all fields")
@@ -52,7 +47,7 @@ class RegisterActivity : AppCompatActivity() {
             registerUser(email, password)
         }
 
-        binding.tvLogin.setOnClickListener {
+        binding.textViewLogin.setOnClickListener {
             finish()
         }
     }
@@ -79,19 +74,19 @@ class RegisterActivity : AppCompatActivity() {
     private fun registerUser(username: String, password: String) {
         viewModel.resetRegisterState()
         showLoading(true)
-        binding.tvError.visibility = View.GONE
+        binding.textViewError.visibility = View.GONE
 
         viewModel.register(username, password)
     }
 
     private fun showLoading(isLoading: Boolean) {
         binding.loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
-        binding.btnRegister.isEnabled = !isLoading
+        binding.buttonRegister.isEnabled = !isLoading
     }
 
     private fun showError(message: String) {
-        binding.tvError.text = message
-        binding.tvError.visibility = View.VISIBLE
+        binding.textViewError.text = message
+        binding.textViewError.visibility = View.VISIBLE
     }
     private fun goToMain() {
         val intent = Intent(this, MainActivity::class.java)

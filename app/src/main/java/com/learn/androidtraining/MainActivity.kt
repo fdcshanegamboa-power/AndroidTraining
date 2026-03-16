@@ -1,31 +1,33 @@
 package com.learn.androidtraining
 
 import android.os.Bundle
-import android.view.View
-import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.learn.androidtraining.fragments.*
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import com.learn.androidtraining.databinding.ActivityMainBinding
+import com.learn.androidtraining.fragments.home.HomeFragment
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private val homeFragment = HomeFragment()
-    private val profileFragment = ProfileFragment()
-    private val settingsFragment = SettingsFragment()
-
+    private lateinit var homeFragment: HomeFragment
+    private lateinit var profileFragment: ProfileFragment
+    private lateinit var settingsFragment: SettingsFragment
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
 
         if (savedInstanceState == null) {
+            homeFragment = HomeFragment()
+            profileFragment = ProfileFragment()
+            settingsFragment = SettingsFragment()
             supportFragmentManager.beginTransaction()
                 .add(binding.fragmentContainer.id, homeFragment, "HOME")
                 .add(binding.fragmentContainer.id, profileFragment, "PROFILE").hide(profileFragment)

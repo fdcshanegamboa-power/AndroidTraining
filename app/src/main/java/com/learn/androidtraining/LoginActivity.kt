@@ -3,41 +3,35 @@ package com.learn.androidtraining
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import android.widget.*
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.firebase.auth.FirebaseAuth
-import com.learn.androidtraining.auth.AuthViewModel
+import com.learn.androidtraining.firebase.auth.AuthViewModel
 import com.learn.androidtraining.databinding.ActivityLoginBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class LoginActivity : AppCompatActivity() {
 
     // View binding refs
     private lateinit var binding: ActivityLoginBinding
-    private val viewModel: AuthViewModel = AuthViewModel()
+    private lateinit var viewModel: AuthViewModel
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        viewModel = AuthViewModel()
         observeLoginState()
         setUpClickListeners()
     }
 
     private fun setUpClickListeners() {
-        binding.btnLogin.setOnClickListener {
-            val username = binding.etUsername.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
+        binding.buttonLogin.setOnClickListener {
+            val username = binding.editTextUsername.text.toString().trim()
+            val password = binding.editTextPassword.text.toString().trim()
 
             if (username.isEmpty() || password.isEmpty()) {
                 showError("Please fill in all fields")
@@ -47,7 +41,7 @@ class LoginActivity : AppCompatActivity() {
             loginUser(username, password)
         }
 
-        binding.tvRegister.setOnClickListener {
+        binding.textViewRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
     }
@@ -76,8 +70,8 @@ class LoginActivity : AppCompatActivity() {
     private fun loginUser(username: String, password: String) {
         viewModel.resetRegisterState()
         showLoading(true)
-        binding.tvError.visibility = View.GONE
-        viewModel.register(username, password)
+        binding.textViewError.visibility = View.GONE
+        viewModel.login(username, password)
     }
 
     override fun onStart() {
@@ -98,12 +92,12 @@ class LoginActivity : AppCompatActivity() {
 
     private fun showLoading(isLoading: Boolean) {
         binding.loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
-        binding.btnLogin.isEnabled = !isLoading
+        binding.buttonLogin.isEnabled = !isLoading
     }
 
     private fun showError(message: String) {
-        binding.tvError.text = message
-        binding.tvError.visibility = View.VISIBLE
+        binding.textViewError.text = message
+        binding.textViewError.visibility = View.VISIBLE
     }
 
     private fun goToMain() {

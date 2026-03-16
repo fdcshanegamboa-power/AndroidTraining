@@ -8,14 +8,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import com.learn.androidtraining.LoginActivity
 import com.learn.androidtraining.R
-import com.learn.androidtraining.auth.AuthViewModel
+import com.learn.androidtraining.firebase.auth.AuthViewModel
 import com.learn.androidtraining.databinding.FragmentSettingsBinding
-import org.w3c.dom.Text
+import com.learn.androidtraining.utils.DataStoreManager
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -51,18 +51,22 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
         savedInstanceState: Bundle?
     ): View? {
         Log.d("SettingsFragment", "onCreateView")
-        return super.onCreateView(inflater, container, savedInstanceState)
+        _binding = FragmentSettingsBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.textTitle.text = message
+        binding.textViewTitle.text = message
         binding.buttonLogout.setOnClickListener {
-            viewModel.logout()
-            val intent = Intent(requireContext(), LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
+            viewLifecycleOwner.lifecycleScope.launch {
+                DataStoreManager.getInstance(requireContext()).clearAll()
+                viewModel.logout()
+                val intent = Intent(requireContext(), LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
         }
         Log.d("SettingsFragment", "onViewCreated")
     }

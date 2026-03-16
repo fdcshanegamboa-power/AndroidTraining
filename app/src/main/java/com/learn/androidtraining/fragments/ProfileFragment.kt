@@ -52,7 +52,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.textTitle.text = message
+        binding.textViewTitle.text = message
         Log.d("ProfileFragment", "onViewCreated")
     }
 

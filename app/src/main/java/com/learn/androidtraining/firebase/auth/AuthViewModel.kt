@@ -1,4 +1,4 @@
-package com.learn.androidtraining.auth
+package com.learn.androidtraining.firebase.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
