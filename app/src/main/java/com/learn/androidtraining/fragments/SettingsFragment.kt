@@ -14,6 +14,7 @@ import android.widget.Toast
 import com.learn.androidtraining.LoginActivity
 import com.learn.androidtraining.R
 import com.learn.androidtraining.auth.AuthViewModel
+import com.learn.androidtraining.databinding.FragmentSettingsBinding
 import org.w3c.dom.Text
 
 // TODO: Rename parameter arguments, choose names that match
@@ -28,7 +29,9 @@ private const val ARG_PARAM2 = "param2"
  */
 class SettingsFragment : Fragment(R.layout.fragment_settings) {
     private var message: String = "This message is from SettingsFragment"
-    private lateinit var logoutButton: Button
+    private var _binding: FragmentSettingsBinding? = null
+    private val binding get() = _binding!!
+
     private val viewModel: AuthViewModel = AuthViewModel()
 
     override fun onAttach(context: Context) {
@@ -54,11 +57,8 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val textView: TextView = view.findViewById<TextView>(R.id.textTitle)
-        logoutButton = view.findViewById<Button>(R.id.button_logout)
-        textView.text = message
-
-        logoutButton.setOnClickListener {
+        binding.textTitle.text = message
+        binding.buttonLogout.setOnClickListener {
             viewModel.logout()
             val intent = Intent(requireContext(), LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

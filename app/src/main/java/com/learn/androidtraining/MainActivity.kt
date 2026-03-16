@@ -8,10 +8,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.learn.androidtraining.fragments.*
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
+import com.learn.androidtraining.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var bottomNav: BottomNavigationView
+    private lateinit var binding: ActivityMainBinding
 
     private val homeFragment = HomeFragment()
     private val profileFragment = ProfileFragment()
@@ -19,20 +20,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        bottomNav = findViewById(R.id.bottom_nav)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
 
         if (savedInstanceState == null) {
-                supportFragmentManager.beginTransaction()
-                    .add(R.id.fragment_container, homeFragment, "HOME")
-                    .add(R.id.fragment_container, profileFragment, "PROFILE").hide(profileFragment)
-                    .add(R.id.fragment_container, settingsFragment, "SETTINGS").hide(settingsFragment)
-                    .commit()
+            supportFragmentManager.beginTransaction()
+                .add(binding.fragmentContainer.id, homeFragment, "HOME")
+                .add(binding.fragmentContainer.id, profileFragment, "PROFILE").hide(profileFragment)
+                .add(binding.fragmentContainer.id, settingsFragment, "SETTINGS").hide(settingsFragment)
+                .commit()
         }
 
-        bottomNav.setOnItemSelectedListener { item ->
+        binding.bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> showFragment(homeFragment)
                 R.id.nav_profile -> showFragment(profileFragment)
@@ -73,31 +74,4 @@ class MainActivity : AppCompatActivity() {
             .show(target)
             .commit()
     }
-
-//    private fun showTab(containerId: Int) {
-//        listOf(R.id.container_home, R.id.container_profile, R.id.container_settings).forEach {
-//            findViewById<FrameLayout>(it).visibility =
-//                if (it == containerId) View.VISIBLE else View.GONE
-//        }
-//    }
-//    override fun onBackPressed() {
-//        val homeContainer = supportFragmentManager.findFragmentByTag("HOME") as? HomeFragment
-//        val homeChildManager = homeContainer?.childFragmentManager
-//
-//        if (homeChildManager != null && homeChildManager.backStackEntryCount > 0) {
-//            homeChildManager.popBackStack()
-//        } else {
-//            super.onBackPressed()
-//        }
-//    }
-
-
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun GreetingPreview() {
-//    AndroidTrainingTheme {
-//        Greeting("Android")
-//    }
-//}

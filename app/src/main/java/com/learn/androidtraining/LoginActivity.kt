@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.firebase.auth.FirebaseAuth
 import com.learn.androidtraining.auth.AuthViewModel
+import com.learn.androidtraining.databinding.ActivityLoginBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -21,45 +22,32 @@ import kotlinx.coroutines.withContext
 class LoginActivity : AppCompatActivity() {
 
     // View binding refs
-    private lateinit var etUsername: EditText
-    private lateinit var etPassword: EditText
-    private lateinit var btnLogin: Button
-    private lateinit var tvError: TextView
-    private lateinit var loadingOverlay: FrameLayout
-    private lateinit var tvRegister: TextView
+    private lateinit var binding: ActivityLoginBinding
     private val viewModel: AuthViewModel = AuthViewModel()
 
-    // Static credentials — swap these out when you have real auth
-    private val VALID_USERNAME = "admin"
-    private val VALID_PASSWORD = "1234"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         observeLoginState()
+        setUpClickListeners()
+    }
 
-        // Wire up views
-        etUsername    = findViewById(R.id.etUsername)
-        etPassword    = findViewById(R.id.etPassword)
-        btnLogin      = findViewById(R.id.btnLogin)
-        tvError       = findViewById(R.id.tvError)
-        loadingOverlay = findViewById(R.id.loadingOverlay)
-        tvRegister = findViewById(R.id.tvRegister)
-
-        btnLogin.setOnClickListener {
-            val username = etUsername.text.toString().trim()
-            val password = etPassword.text.toString().trim()
+    private fun setUpClickListeners() {
+        binding.btnLogin.setOnClickListener {
+            val username = binding.etUsername.text.toString().trim()
+            val password = binding.etPassword.text.toString().trim()
 
             if (username.isEmpty() || password.isEmpty()) {
                 showError("Please fill in all fields")
                 return@setOnClickListener
             }
 
-            // Kick off the coroutine
             loginUser(username, password)
         }
 
-        tvRegister.setOnClickListener {
+        binding.tvRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
     }
@@ -88,7 +76,7 @@ class LoginActivity : AppCompatActivity() {
     private fun loginUser(username: String, password: String) {
         viewModel.resetRegisterState()
         showLoading(true)
-        tvError.visibility = View.GONE
+        binding.tvError.visibility = View.GONE
         viewModel.register(username, password)
     }
 
@@ -109,17 +97,18 @@ class LoginActivity : AppCompatActivity() {
 //    }
 
     private fun showLoading(isLoading: Boolean) {
-        loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
-        btnLogin.isEnabled = !isLoading
+        binding.loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.btnLogin.isEnabled = !isLoading
     }
 
     private fun showError(message: String) {
-        tvError.text = message
-        tvError.visibility = View.VISIBLE
+        binding.tvError.text = message
+        binding.tvError.visibility = View.VISIBLE
     }
 
     private fun goToMain() {
         val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("welcome_message", "Welcome back, ${FirebaseAuth.getInstance().currentUser?.email ?: "User"}!")
         startActivity(intent)
         finish()
     }

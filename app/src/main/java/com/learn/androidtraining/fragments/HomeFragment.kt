@@ -10,13 +10,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import com.learn.androidtraining.MainActivity
 import com.learn.androidtraining.R
+import com.learn.androidtraining.databinding.FragmentHomeBinding
 
-class HomeFragment : Fragment(R.layout.fragment_home) {
-    private var message: String = "This message is from HomeFragment"
+class HomeFragment : Fragment() {
+//    private var message: String = "This message is from HomeFragment"
+
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
     private val tag: String = "HomeFragment"
-    private lateinit var goToHome2Button: Button
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -33,21 +35,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        Log.d(tag, "onCreateView")
-        return super.onCreateView(inflater, container, savedInstanceState)
+    ): View {
+        Log.d(tag, "onCreateView - inflating layout")
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        goToHome2Button = view.findViewById<Button>(R.id.button_go_home2)
 
-        goToHome2Button.setOnClickListener {
+        binding.buttonGoHome2.setOnClickListener {
             navigateTo(HomeFragment2())
         }
         childFragmentManager.addOnBackStackChangedListener {
             val hasChildren = childFragmentManager.backStackEntryCount > 0
-            goToHome2Button.visibility = if (hasChildren) View.GONE else View.VISIBLE
+            binding.buttonGoHome2.visibility = if (hasChildren) View.GONE else View.VISIBLE
         }
 
 //        val textView: TextView = view.findViewById<TextView>(R.id.textTitle)
@@ -59,7 +61,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val current = childFragmentManager.fragments.lastOrNull()
         if (current != null) transaction.hide(current)
         transaction
-            .add(R.id.home_child_container, fragment)
+            .add(binding.homeChildContainer.id, fragment)
             .addToBackStack(null)
             .commit()
     }
@@ -87,6 +89,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onDestroyView() {
         super.onDestroyView()
         Log.d(tag, "onDestroyView")
+        _binding = null
     }
 
     override fun onDestroy() {

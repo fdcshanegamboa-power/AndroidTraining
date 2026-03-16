@@ -13,40 +13,31 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.learn.androidtraining.auth.AuthViewModel
+import com.learn.androidtraining.databinding.ActivityRegisterBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class RegisterActivity : AppCompatActivity() {
 
-    private lateinit var etEmail: EditText
-    private lateinit var etPassword: EditText
-    private lateinit var etConfirmPassword: EditText
-    private lateinit var btnRegister: Button
-    private lateinit var tvError: TextView
-    private lateinit var loadingOverlay: FrameLayout
-    private lateinit var tvLogin: TextView
+
 
     private val viewModel: AuthViewModel by viewModels()
+    private lateinit var binding: ActivityRegisterBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_register)
+        binding = ActivityRegisterBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setUpClickListeners()
         observeRegistrationState()
+    }
+    private fun setUpClickListeners(){
+        binding.btnRegister.setOnClickListener {
 
-        etEmail = findViewById(R.id.etEmail)
-        etPassword = findViewById(R.id.etPassword)
-        etConfirmPassword = findViewById(R.id.etConfirmPassword)
-        btnRegister = findViewById(R.id.btnRegister)
-        tvError = findViewById(R.id.tvError)
-        loadingOverlay = findViewById(R.id.loadingOverlay)
-        tvLogin = findViewById(R.id.tvLogin)
-
-        btnRegister.setOnClickListener {
-
-            val email = etEmail.text.toString().trim()
-            val password = etPassword.text.toString().trim()
-            val confirm = etConfirmPassword.text.toString().trim()
+            val email = binding.etEmail.text.toString().trim()
+            val password = binding.etPassword.text.toString().trim()
+            val confirm = binding.etConfirmPassword.text.toString().trim()
 
             if (email.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
                 showError("Please fill in all fields")
@@ -61,11 +52,11 @@ class RegisterActivity : AppCompatActivity() {
             registerUser(email, password)
         }
 
-        tvLogin.setOnClickListener {
+        binding.tvLogin.setOnClickListener {
             finish()
         }
-
     }
+
     private fun observeRegistrationState() {
         lifecycleScope.launch {
             // Use repeatOnLifecycle to respect lifecycle
@@ -88,19 +79,19 @@ class RegisterActivity : AppCompatActivity() {
     private fun registerUser(username: String, password: String) {
         viewModel.resetRegisterState()
         showLoading(true)
-        tvError.visibility = View.GONE
+        binding.tvError.visibility = View.GONE
 
         viewModel.register(username, password)
     }
 
     private fun showLoading(isLoading: Boolean) {
-        loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
-        btnRegister.isEnabled = !isLoading
+        binding.loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.btnRegister.isEnabled = !isLoading
     }
 
     private fun showError(message: String) {
-        tvError.text = message
-        tvError.visibility = View.VISIBLE
+        binding.tvError.text = message
+        binding.tvError.visibility = View.VISIBLE
     }
     private fun goToMain() {
         val intent = Intent(this, MainActivity::class.java)

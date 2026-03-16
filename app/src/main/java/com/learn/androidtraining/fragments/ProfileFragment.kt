@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import com.learn.androidtraining.R
+import com.learn.androidtraining.databinding.FragmentProfileBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -23,6 +24,9 @@ private const val ARG_PARAM2 = "param2"
  */
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private var message: String = "This message is from ProfileFragmentkjkkkjjkkjjkjkkj"
+
+    private var _binding: FragmentProfileBinding? = null
+    private val binding get() = _binding!!
 
 
     override fun onAttach(context: Context) {
@@ -40,17 +44,15 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        Log.d("ProfileFragment", "onCreateView")
-        return super.onCreateView(inflater, container, savedInstanceState)
+    ): View {
+        Log.d("ProfileFragment", "onCreateView - inflating layout")
+        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-
-        val textView: TextView = view.findViewById<TextView>(R.id.textTitle)
-        textView.text = message
+        binding.textTitle.text = message
         Log.d("ProfileFragment", "onViewCreated")
     }
 
