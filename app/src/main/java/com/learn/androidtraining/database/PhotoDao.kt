@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.learn.androidtraining.photos.PhotoItem
+import com.learn.androidtraining.photos.SyncStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -25,5 +26,14 @@ interface PhotoDao {
 
     @Query("DELETE FROM photos WHERE userId = :userId")
     suspend fun deleteAllPhotosForUser(userId: String)
-}
 
+    // Sync-related queries
+    @Query("SELECT * FROM photos WHERE syncStatus = 'PENDING' AND userId = :userId")
+    suspend fun getPendingPhotos(userId: String): List<PhotoItem>
+
+    @Query("UPDATE photos SET syncStatus = :status, imageUrl = :cloudinaryUrl, lastSyncedAt = :lastSyncedAt WHERE id = :photoId")
+    suspend fun updateSyncStatus(photoId: String, status: SyncStatus, cloudinaryUrl: String, lastSyncedAt: Long)
+
+    @Query("UPDATE photos SET syncStatus = :status WHERE id = :photoId")
+    suspend fun updateSyncStatusOnly(photoId: String, status: SyncStatus)
+}

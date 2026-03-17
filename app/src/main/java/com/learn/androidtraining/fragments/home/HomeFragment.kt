@@ -129,6 +129,7 @@ class HomeFragment : Fragment() {
     private fun setupRecyclerView() {
         photoAdapter = PhotoAdapter(onDeleteClick = { photo ->
             viewModel.deletePhoto(photo)
+            Log.d(tag, "DeletePhoto: requested deletion of photoId=${photo.id}")
         })
         binding.recyclerPhotos.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -146,8 +147,14 @@ class HomeFragment : Fragment() {
                     // Load the last photo if available
                     if (state.lastPhotoUrl != null) {
                         Log.d(tag, "observeUiState: loading lastPhotoUrl=${state.lastPhotoUrl}")
+                        // Load from Cloudinary URL or local file
+                        val imageSource = if (state.lastPhotoUrl.startsWith("http")) {
+                            state.lastPhotoUrl // Cloudinary URL
+                        } else {
+                            java.io.File(state.lastPhotoUrl) // Local file path
+                        }
                         Glide.with(this@HomeFragment)
-                            .load(java.io.File(state.lastPhotoUrl))
+                            .load(imageSource)
                             .placeholder(R.drawable.ic_image_placeholder)
                             .error(R.drawable.ic_image_placeholder)
                             .into(binding.imagePreview)

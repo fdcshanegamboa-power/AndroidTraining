@@ -45,8 +45,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             _uiState.update { it.copy(isLoading = true) }
             photoRepository.getAllPhotosForUser(userId).collect { photos ->
                 Log.d(tag, "loadPhotos: received ${photos.size} photos")
-                // Set lastPhotoUrl to the most recent photo (first in list since it's ordered by timestamp DESC)
-                val lastUrl = photos.firstOrNull()?.imageUrl
+                // Set lastPhotoUrl to the most recent photo's imageUrl (Cloudinary) or localFilePath
+                val lastUrl = photos.firstOrNull()?.let { photo ->
+                    if (photo.imageUrl.isNotEmpty()) photo.imageUrl else photo.localFilePath
+                }
                 _uiState.update { it.copy(photos = photos, isLoading = false, lastPhotoUrl = lastUrl) }
                 Log.d(tag, "loadPhotos: updated lastPhotoUrl=$lastUrl")
             }
@@ -70,7 +72,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 userId = userId,
                 name = fileName,
                 date = timestamp,
-                imageUrl = "", // Will be set by repository
+                imageUrl = "", // Will be set after Cloudinary upload
+                localFilePath = "", // Will be set by repository
                 timestamp = System.currentTimeMillis(),
             )
 

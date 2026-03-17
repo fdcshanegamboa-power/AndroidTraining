@@ -23,6 +23,15 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Load Cloudinary properties from local.properties
+        val properties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(localPropertiesFile.inputStream())
+        }
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${properties.getProperty("CLOUDINARY_CLOUD_NAME", "")}\"")
+        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"${properties.getProperty("CLOUDINARY_UPLOAD_PRESET", "")}\"")
     }
 
     buildTypes {
@@ -97,6 +106,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
 
     // Room Database
     val room_version = "2.8.4"
@@ -107,6 +117,11 @@ dependencies {
     //for image uploading
     implementation("com.github.bumptech.glide:glide:5.0.5")
 
+    // Cloudinary for image storage
+    implementation("com.cloudinary:cloudinary-android:3.1.2")
+
+    // WorkManager for background sync
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
 
 }

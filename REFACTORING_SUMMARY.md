@@ -1,7 +1,32 @@
-# Refactoring Summary: Cloudinary + Firebase Database → Room + DataStore
+# Refactoring Summary: Hybrid Architecture (Room + Cloudinary + Firebase)
 
 ## Overview
-Successfully refactored the Android Training app to use **Room Database** and **DataStore** instead of Cloudinary and Firebase Database, while keeping Firebase Auth.
+Successfully implemented a **hybrid offline-first architecture** combining:
+- **Room Database** - Local cache for instant UI updates
+- **Cloudinary** - Cloud image storage
+- **Firebase Firestore** - Cloud metadata storage (source of truth)
+- **Firebase Auth** - User authentication (preserved from before)
+
+## Architecture Strategy
+
+### Save Photo Flow
+1. Save locally INSTANTLY (Room + local file) → UI shows yellow indicator
+2. Upload to Cloudinary in background (non-blocking)
+3. Save metadata to Firebase Firestore
+4. Update Room status to SYNCED → UI shows green indicator
+5. Delete local file to save device storage
+
+### Load Photos Flow
+1. Display local photos from Room immediately
+2. Sync from Firebase Firestore in background (cloud as source of truth)
+3. Merge cloud photos with local (cloud wins on conflicts)
+4. UI auto-updates via Flow
+
+### Delete Photo Flow
+1. Delete from Firebase Firestore first (cloud as source of truth)
+2. Delete from Cloudinary
+3. Delete from Room
+4. Delete local file
 
 ## Changes Made
 

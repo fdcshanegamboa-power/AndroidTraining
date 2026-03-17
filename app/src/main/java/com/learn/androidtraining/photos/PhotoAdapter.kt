@@ -1,11 +1,14 @@
 package com.learn.androidtraining.photos
 
+import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.learn.androidtraining.databinding.ItemPhotoBinding
+import java.io.File
 
 class PhotoAdapter(
     private val onDeleteClick: (PhotoItem) -> Unit,
@@ -20,10 +23,41 @@ class PhotoAdapter(
             binding.textPhotoDate.text = item.date
             binding.buttonDelete.setOnClickListener { onDeleteClick(item) }
 
-            // Load image from file path
-            if (item.imageUrl.isNotBlank()) {
+            // Set sync status indicator color (circular badge)
+            when (item.syncStatus) {
+                SyncStatus.PENDING -> {
+                    binding.syncStatusIndicator.backgroundTintList =
+                        android.content.res.ColorStateList.valueOf(Color.parseColor("#FFA500")) // Orange
+                    binding.syncStatusIndicator.visibility = View.VISIBLE
+                }
+                SyncStatus.SYNCED -> {
+                    binding.syncStatusIndicator.backgroundTintList =
+                        android.content.res.ColorStateList.valueOf(Color.parseColor("#4CAF50")) // Green
+                    binding.syncStatusIndicator.visibility = View.VISIBLE
+                }
+                SyncStatus.FAILED -> {
+                    binding.syncStatusIndicator.backgroundTintList =
+                        android.content.res.ColorStateList.valueOf(Color.parseColor("#F44336")) // Red
+                    binding.syncStatusIndicator.visibility = View.VISIBLE
+                }
+            }
+
+            // Load image - prioritize Cloudinary URL, fallback to local file
+            val imageSource = when {
+                item.imageUrl.isNotEmpty() && item.syncStatus == SyncStatus.SYNCED -> {
+                    // Use Cloudinary URL
+                    item.imageUrl
+                }
+                item.localFilePath.isNotEmpty() -> {
+                    // Use local file
+                    File(item.localFilePath)
+                }
+                else -> null
+            }
+
+            if (imageSource != null) {
                 Glide.with(binding.root)
-                    .load(java.io.File(item.imageUrl))
+                    .load(imageSource)
                     .into(binding.imageThumbnail)
             } else {
                 binding.imageThumbnail.setImageDrawable(null)
@@ -40,3 +74,4 @@ class PhotoAdapter(
         holder.bind(getItem(position))
     }
 }
+
