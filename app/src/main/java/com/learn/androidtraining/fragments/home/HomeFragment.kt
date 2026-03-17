@@ -57,7 +57,7 @@ class HomeFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val bitmap = result.data?.extras?.get("data") as? Bitmap
-                if (bitmap != null) viewModel.uploadPhoto(bitmap, requireContext().cacheDir)
+                if (bitmap != null) viewModel.uploadPhoto(bitmap)
                 else Toast.makeText(requireContext(), "Failed to get photo", Toast.LENGTH_SHORT).show()
             }
         }
@@ -143,10 +143,18 @@ class HomeFragment : Fragment() {
                     photoAdapter.submitList(state.photos)
                     binding.textPhotoCount.text = "${state.photos.size} photos"
 
-                    Glide.with(this@HomeFragment)
-                        .load(state.lastPhotoUrl)
-                        .placeholder(R.drawable.ic_image_placeholder)
-                        .into(binding.imagePreview)
+                    // Load the last photo if available
+                    if (state.lastPhotoUrl != null) {
+                        Log.d(tag, "observeUiState: loading lastPhotoUrl=${state.lastPhotoUrl}")
+                        Glide.with(this@HomeFragment)
+                            .load(java.io.File(state.lastPhotoUrl))
+                            .placeholder(R.drawable.ic_image_placeholder)
+                            .error(R.drawable.ic_image_placeholder)
+                            .into(binding.imagePreview)
+                    } else {
+                        Log.d(tag, "observeUiState: no lastPhotoUrl available")
+                        binding.imagePreview.setImageResource(R.drawable.ic_image_placeholder)
+                    }
 
                     state.errorMessage?.let { message ->
                         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()

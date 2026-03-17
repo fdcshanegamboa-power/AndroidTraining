@@ -20,9 +20,14 @@ class PhotoAdapter(
             binding.textPhotoDate.text = item.date
             binding.buttonDelete.setOnClickListener { onDeleteClick(item) }
 
-            Glide.with(binding.root)
-                .load(item.imageUrl.ifBlank { null }) // don't load empty URLs
-                .into(binding.imageThumbnail)
+            // Load image from file path
+            if (item.imageUrl.isNotBlank()) {
+                Glide.with(binding.root)
+                    .load(java.io.File(item.imageUrl))
+                    .into(binding.imageThumbnail)
+            } else {
+                binding.imageThumbnail.setImageDrawable(null)
+            }
         }
     }
 

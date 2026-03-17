@@ -5,18 +5,14 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.learn.androidtraining.cloudinary.CloudinaryRepository
-import com.learn.androidtraining.firebase.PhotoRepository
+import com.learn.androidtraining.repository.PhotoRepository
 import com.learn.androidtraining.photos.PhotoItem
-import com.learn.androidtraining.utils.DataStoreManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -29,16 +25,13 @@ data class HomeUiState(
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    private val photoRepository = PhotoRepository()
-    private val cloudinaryRepository = CloudinaryRepository()
-    private val dataStoreManager = DataStoreManager.getInstance(application)
+    private val photoRepository = PhotoRepository(application)
     private val _uiState = MutableStateFlow(HomeUiState())
     private val tag = "HomeViewModel"
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
         loadPhotos()
-        loadLastPhotoUrl()
     }
 
     private fun loadPhotos() {
@@ -50,27 +43,17 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         Log.d(tag, "loadPhotos: fetching photos for userId=$userId")
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            photoRepository.getAllPhotos(userId).fold(
-                onSuccess = { photos ->
-                    Log.d(tag, "loadPhotos: success, count=${photos.size}")
-                    _uiState.update { it.copy(photos = photos, isLoading = false) }
-                },
-                onFailure = { e ->
-                    Log.e(tag, "loadPhotos: failed", e)
-                    _uiState.update { it.copy(errorMessage = "Failed to load photos", isLoading = false) }
-                }
-            )
+            photoRepository.getAllPhotosForUser(userId).collect { photos ->
+                Log.d(tag, "loadPhotos: received ${photos.size} photos")
+                // Set lastPhotoUrl to the most recent photo (first in list since it's ordered by timestamp DESC)
+                val lastUrl = photos.firstOrNull()?.imageUrl
+                _uiState.update { it.copy(photos = photos, isLoading = false, lastPhotoUrl = lastUrl) }
+                Log.d(tag, "loadPhotos: updated lastPhotoUrl=$lastUrl")
+            }
         }
     }
 
-    private fun loadLastPhotoUrl() {
-        viewModelScope.launch {
-            val url = dataStoreManager.getLastPhotoUrl()
-            _uiState.update { it.copy(lastPhotoUrl = url) }
-        }
-    }
-
-    fun uploadPhoto(bitmap: Bitmap, cacheDir: File) {
+    fun uploadPhoto(bitmap: Bitmap) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
             Log.w(tag, "uploadPhoto: user is not logged in")
@@ -79,56 +62,27 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val photoId = System.currentTimeMillis().toString()
         val timestamp = SimpleDateFormat("MMM dd, yyyy · hh:mm a", Locale.getDefault()).format(Date())
         val fileName = "photo_$photoId.jpg"
-        Log.d(tag, "uploadPhoto: starting upload photoId=$photoId userId=$userId")
-
-        val tempPhoto = PhotoItem(
-            id = photoId,
-            userId = userId,
-            name = fileName,
-            date = timestamp,
-            imageUrl = "",
-            timestamp = System.currentTimeMillis(),
-        )
-
-        _uiState.update { it.copy(photos = listOf(tempPhoto) + it.photos) }
+        Log.d(tag, "uploadPhoto: starting save photoId=$photoId userId=$userId")
 
         viewModelScope.launch {
-            val file = bitmapToFile(bitmap, fileName, cacheDir)
-            Log.d(tag, "uploadPhoto: bitmap written to file=${file.absolutePath}")
+            val photo = PhotoItem(
+                id = photoId,
+                userId = userId,
+                name = fileName,
+                date = timestamp,
+                imageUrl = "", // Will be set by repository
+                timestamp = System.currentTimeMillis(),
+            )
 
-            cloudinaryRepository.uploadImage(file, photoId).fold(
-                onSuccess = { imageUrl ->
-                    Log.d(tag, "uploadPhoto: cloudinary success imageUrl=$imageUrl")
-                    val photo = tempPhoto.copy(imageUrl = imageUrl)
-                    photoRepository.savePhoto(photo).fold(
-                        onSuccess = {
-                            Log.d(tag, "uploadPhoto: firestore save success photoId=$photoId")
-                            _uiState.update { state ->
-                                state.copy(
-                                    photos = state.photos.map { if (it.id == photoId) photo else it },
-                                    lastPhotoUrl = imageUrl,
-                                )
-                            }
-                            dataStoreManager.saveLastPhotoUrl(imageUrl)
-                        },
-                        onFailure = { e ->
-                            Log.e(tag, "uploadPhoto: firestore save failed", e)
-                            _uiState.update { state ->
-                                state.copy(
-                                    errorMessage = "Failed to save photo",
-                                    photos = state.photos.filterNot { it.id == photoId },
-                                )
-                            }
-                        }
-                    )
+            photoRepository.savePhoto(photo, bitmap).fold(
+                onSuccess = {
+                    Log.d(tag, "uploadPhoto: save success photoId=$photoId")
+                    // Photo list and lastPhotoUrl will auto-update via Flow from loadPhotos()
                 },
                 onFailure = { e ->
-                    Log.e(tag, "uploadPhoto: cloudinary upload failed", e)
+                    Log.e(tag, "uploadPhoto: save failed", e)
                     _uiState.update { state ->
-                        state.copy(
-                            errorMessage = "Upload failed",
-                            photos = state.photos.filterNot { it.id == photoId },
-                        )
+                        state.copy(errorMessage = "Failed to save photo")
                     }
                 }
             )
@@ -143,12 +97,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
         Log.d(tag, "deletePhoto: deleting photoId=${photo.id} userId=$userId")
         viewModelScope.launch {
-            photoRepository.deletePhoto(photo.id, userId).fold(
+            photoRepository.deletePhoto(photo).fold(
                 onSuccess = {
                     Log.d(tag, "deletePhoto: success photoId=${photo.id}")
-                    _uiState.update { state ->
-                        state.copy(photos = state.photos.filterNot { it.id == photo.id })
-                    }
+                    // Photo list will auto-update via Flow
                 },
                 onFailure = { e ->
                     Log.e(tag, "deletePhoto: failed photoId=${photo.id}", e)
@@ -162,11 +114,5 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(errorMessage = null) }
     }
 
-    private fun bitmapToFile(bitmap: Bitmap, fileName: String, cacheDir: File): File {
-        val file = File(cacheDir, fileName)
-        file.outputStream().use { out ->
-            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out)
-        }
-        return file
-    }
+
 }

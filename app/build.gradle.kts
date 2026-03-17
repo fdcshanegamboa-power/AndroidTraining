@@ -4,13 +4,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
 
     id("com.google.gms.google-services")
 }
-
-val localProperties = Properties()
-localProperties.load(rootProject.file("local.properties").inputStream())
-
 
 android {
 
@@ -25,8 +22,6 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${localProperties["CLOUDINARY_CLOUD_NAME"]}\"")
-        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"${localProperties["CLOUDINARY_UPLOAD_PRESET"]}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -102,19 +97,16 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-storage")
-    implementation("com.google.firebase:firebase-firestore")
 
+    // Room Database
+    val room_version = "2.8.4"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
 
     //for image uploading
     implementation("com.github.bumptech.glide:glide:5.0.5")
 
-    //cloudinary
-//    implementation("com.cloudinary:kotlin-url-gen:1.7.0")
-    implementation("com.cloudinary:cloudinary-android:3.1.2")
-//    implementation("com.cloudinary:cloudinary-http5:2.0.0")
-//    implementation("com.cloudinary:kotlin-url-gen:1.10.0")
-//    implementation("com.cloudinary:kotlin-uploader:1.10.0")
 
 
 }
